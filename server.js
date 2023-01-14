@@ -1,9 +1,11 @@
 const express = require('express')
+const bodyParser = require('body-parser')
+const fs = require('fs')
 const app = express()
 const port = 3000
 
 // Replace once a database is connected
-const data = [
+const discordInfo = [
     {
         name: "CrunchytheSnail",
         discordId: 814218627624337488,
@@ -38,8 +40,28 @@ const data = [
     }
 ]
 
-app.get('/', (req, res) => {
-    res.json(data)
+var jsonParser = bodyParser.json()
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
+
+app.get('/Discord', (req, res) => {
+    res.json(discordInfo)
+})
+
+app.post('/TimeData', jsonParser, (req, res) => {    
+    fs.readFile('./tempDB.json', function (err, data) {
+        var temp = JSON.parse(data)
+        temp.push(req.body)
+
+        fs.writeFile('./tempDB.json', JSON.stringify(temp), err => {
+            if (err) {
+                console.log('Error writing file', err)
+                res.json(err);
+            } else {
+                console.log('Successfully wrote file')
+                res.json('Success');
+            }
+        })
+    })
 })
 
 app.listen(port, () => {
